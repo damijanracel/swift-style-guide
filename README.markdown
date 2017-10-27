@@ -1,4 +1,4 @@
-# The Official raywenderlich.com Swift Style Guide.
+# The Official EqualEyes Swift Style Guide.
 ### Updated for Swift 3
 
 This style guide is different from others you may see, because the focus is centered on readability for print and the web. We created this style guide to keep the code in our books, tutorials, and starter kits nice and consistent — even though we have many different authors working on the books.
@@ -58,30 +58,25 @@ Strive to make your code compile without warnings. This rule informs many style 
 
 Descriptive and consistent naming makes software easier to read and understand. Use the Swift naming conventions described in the [API Design Guidelines](https://swift.org/documentation/api-design-guidelines/). Some key takeaways include:
 
-- striving for clarity at the call site
-- prioritizing clarity over brevity
-- using camel case (not snake case)
+- using camel case (not snake case), exceptions are unit tests 
+  - Unit tests naming example: methodName_Should_DoSomething()
 - using uppercase for types (and protocols), lowercase for everything else
-- including all needed words while omitting needless words
 - using names based on roles, not types
 - sometimes compensating for weak type information
-- striving for fluent usage
 - beginning factory methods with `make`
+- ending UI interactions with `tapped` (UIButton tapped, imageTapped and/or `selected` (Cell selected)
 - naming methods for their side effects
   - verb methods follow the -ed, -ing rule for the non-mutating version
   - noun methods follow the formX rule for the mutating version
-  - boolean types should read like assertions
-  - protocols that describe _what something is_ should read as nouns
-  - protocols that describe _a capability_ should end in _-able_ or _-ible_
-- using terms that don't surprise experts or confuse beginners
-- generally avoiding abbreviations
-- using precedent for names
+  - boolean types should read like assertions (isChecked, isEnabled)
+  - protocols that describe _what something is_ should read as nouns 
+  - protocols that describe _a capability_ should end in _-able_ or _-ible_ (Comparable, Editable)
 - preferring methods and properties to free functions
-- casing acronyms and initialisms uniformly up or down
-- giving the same base name to methods that share the same meaning
-- avoiding overloads on return type
+- casing acronyms and initialisms uniformly up (HTTP, API, ABI, URL, ID)
+- giving the same base name to methods that share the same meaning (updateTableColorRed, updateTableColorGreen)
 - choosing good parameter names that serve as documentation
 - labeling closure and tuple parameters
+  - empty closure should be `() -> Void`
 - taking advantage of default parameters
 
 ### Prose
@@ -187,6 +182,19 @@ In particular, when adding protocol conformance to a model, prefer adding a sepa
 
 **Preferred:**
 ```swift
+class MyViewController: UIViewController, UITableViewDataSource, UIScrollViewDelegate {
+  func viewDidLoad() {
+  }
+  
+  // MARK: - UITableViewDataSource
+  // UITableViewDataSource methods
+  
+  // ...
+}
+```
+
+**Not Preferred:**
+```swift
 class MyViewController: UIViewController {
   // class stuff here
 }
@@ -202,16 +210,37 @@ extension MyViewController: UIScrollViewDelegate {
 }
 ```
 
-**Not Preferred:**
+Since the compiler does not allow you to re-declare protocol conformance in a derived class, it is not always required to replicate the extension groups of the base class. This is especially true if the derived class is a terminal class and a small number of methods are being overridden. When to preserve the extension groups is left to the discretion of the author.
+
+For UIKit view controllers, consider grouping lifecycle, custom accessors, and IBAction in separate sections:
+
 ```swift
-class MyViewController: UIViewController, UITableViewDataSource, UIScrollViewDelegate {
-  // all methods
+class MyViewController: UIViewController, UITableViewDataSource {
+  // Local enums and local structs
+  
+  // Static variables/constants
+  
+  // IBOutlet variables
+  
+  // Local variables/constants
+  
+  // View Lifecycle
+  
+  // User interaction methods
+  
+  // MARK: UITableViewDelegate
+  // Delegate methods
+  
+  // Public Methods
+  
+  // Private methods
 }
 ```
 
-Since the compiler does not allow you to re-declare protocol conformance in a derived class, it is not always required to replicate the extension groups of the base class. This is especially true if the derived class is a terminal class and a small number of methods are being overridden. When to preserve the extension groups is left to the discretion of the author.
+To avoid huge view controllers, separate larger protocol implementations like UITableViewDelegate and UITableViewDataSource to separate files *when meaningful*.
 
-For UIKit view controllers, consider grouping lifecycle, custom accessors, and IBAction in separate class extensions.
+Maximum ViewController size in lines is: *500*.
+Maximum Line length is *100*.
 
 ### Unused Code
 
