@@ -266,7 +266,7 @@ extension MyViewController: UIScrollViewDelegate {
 
 Since the compiler does not allow you to re-declare protocol conformance in a derived class, it is not always required to replicate the extension groups of the base class. This is especially true if the derived class is a terminal class and a small number of methods are being overridden. When to preserve the extension groups is left to the discretion of the author.
 
-For UIKit view controllers, consider grouping lifecycle, custom accessors, and IBAction in separate sections. Use Mark notation only for delegate functions. In every group of variables defined below, always put let variables before var variables.
+For UIKit view controllers, consider grouping lifecycle, custom accessors, and IBAction in separate sections. Use Mark notation only for delegate functions. In every group of variables defined below, always put let variables above var variables.
 
 ```swift
 class MyViewController: UIViewController, UITableViewDataSource {
@@ -282,12 +282,12 @@ class MyViewController: UIViewController, UITableViewDataSource {
   
   // User interaction methods
   
-  // MARK: UITableViewDelegate
-  // Delegate methods
-  
   // Public Methods
   
   // Private methods
+  
+  // MARK: UITableViewDelegate
+  // Delegate methods
 }
 ```
 
