@@ -15,6 +15,7 @@ Our overarching goals are clarity, consistency and brevity, in that order.
   * [Generics](#generics)
   * [Class Prefixes](#class-prefixes)
   * [Language](#language)
+* [General code style](#style)
 * [Code Organization](#code-organization)
   * [Protocol Conformance](#protocol-conformance)
   * [Unused Code](#unused-code)
@@ -172,6 +173,59 @@ let color = "red"
 let colour = "red"
 ```
 
+## Style
+
+### Guards
+When writing a guard statement that is used only to exit a function or return a single value, write it in one line. Split guard into multiple lines if the guard block is more complex. 
+
+**Preferred:**
+``` swift
+guard let user = user else { return }
+guard let bundle = bundle else { return nil }
+guard self > 0 else { return "" }
+
+guard let view = viewController.navigationController?.view ?? viewController.view else {
+  Logger.error("Couldn't show loader because viewControllers view was nil")
+  return
+}
+```
+
+**Not Preferred:**
+```swift
+guard let user = user else { 
+  return 
+}
+
+guard let bundle = bundle else { 
+  return nil 
+}
+```
+
+### Long lines
+When you reach the maximum line length add a line break and continue writing in the next line. Don't break lines if the line is not longer than the maximum line length.
+
+### Json parsing
+Don't use horizontal allignment for assigning values to dictionaries
+
+**Preferred:**
+```swift
+json["name"] = name as AnyObject?
+json["notes"] = notes as AnyObject?
+json["items"] = itemsJSON as AnyObject?
+json["description"] = description as AnyObject?
+json["image"] = imageUrl as AnyObject?
+```
+
+**Not Preferred:**
+```swift
+json["name"]        = name as AnyObject?
+json["notes"]       = notes as AnyObject?
+json["items"]       = itemsJSON as AnyObject?
+json["description"] = description as AnyObject?
+json["image"]       = imageUrl as AnyObject?
+```
+
+
 ## Code Organization
 
 Use extensions to organize your code into logical blocks of functionality. Each extension should be set off with a `// MARK: -` comment to keep things well-organized.
@@ -212,7 +266,7 @@ extension MyViewController: UIScrollViewDelegate {
 
 Since the compiler does not allow you to re-declare protocol conformance in a derived class, it is not always required to replicate the extension groups of the base class. This is especially true if the derived class is a terminal class and a small number of methods are being overridden. When to preserve the extension groups is left to the discretion of the author.
 
-For UIKit view controllers, consider grouping lifecycle, custom accessors, and IBAction in separate sections:
+For UIKit view controllers, consider grouping lifecycle, custom accessors, and IBAction in separate sections. Use Mark notation only for delegate functions. In every group of variables defined below, always put let variables before var variables.
 
 ```swift
 class MyViewController: UIViewController, UITableViewDataSource {
@@ -237,16 +291,21 @@ class MyViewController: UIViewController, UITableViewDataSource {
 }
 ```
 
-To avoid huge view controllers, separate larger protocol implementations like UITableViewDelegate and UITableViewDataSource to separate files *when meaningful*.
+To avoid huge view controllers, separate protocol implementations like UITableViewDelegate and UITableViewDataSource into separate files by default. Only leave them in the view controller when they are very small, don't offer a lot of reusabilty and increase readability of the view controller. 
 
+Prefered ViewController size in line: *around 300*
 Maximum ViewController size in lines is: *500*.
 Maximum Line length is *100*.
+
+500 lines of code is a lot. Every view controller between 300 - 400 lines should trigger a warning and be examined more closesly in a code review session. Without any good reasons for the large size, the view controller should be refactored to a prefered size of around 300 lines.
 
 ### Unused Code
 
 Unused (dead) code, including Xcode template code and placeholder comments should be removed. An exception is when your tutorial or book instructs the user to use the commented code.
 
 Aspirational methods not directly associated with the tutorial whose implementation simply calls the superclass should also be removed. This includes any empty/unused UIApplicationDelegate methods.
+
+If a feature is removed from the project, any code, layouts and assets that have to do with that feature should also be removed from the project.
 
 **Preferred:**
 ```swift
@@ -308,6 +367,8 @@ else {
 
 * There should be exactly one blank line between methods to aid in visual clarity and organization. Whitespace within methods should separate functionality, but having too many sections in a method often means you should refactor into several methods.
 
+* Whitespace should be added when ...
+
 * Colons always have no space on the left and one space on the right. Exceptions are the ternary operator `? :`, empty dictionary `[:]` and `#selector` syntax for unnamed parameters `(_:)`.
 
 **Preferred:**
@@ -332,14 +393,23 @@ class TestDatabase : Database {
 
 ## Comments
 
-When they are needed, use comments to explain **why** a particular piece of code does something. Comments must be kept up-to-date or deleted.
+When they are needed, use comments to explain **why** a particular piece of code does something. If you use an unconventional solution and you think it's not obvious why implemented it in such a way, always add a comment describing your reasons. Comments must be kept up-to-date or deleted.
+
+```
+guard let user = UserSessionManager.shared.currentUser else {
+  //This api call is triggered everytime the app starts. We don't want to show parq questions to the user everytime there is an error
+  completion(true)
+  return
+}
+```
 
 Avoid block comments inline with code, as the code should be as self-documenting as possible. *Exception: This does not apply to those comments used to generate documentation.*
-
 
 ## Classes and Structures
 
 ### Which one to use?
+
+Should use structs by default and convert to class if needed.
 
 Remember, structs have [value semantics](https://developer.apple.com/library/mac/documentation/Swift/Conceptual/Swift_Programming_Language/ClassesAndStructures.html#//apple_ref/doc/uid/TP40014097-CH13-XID_144). Use structs for things that do not have an identity. An array that contains [a, b, c] is really the same as another array that contains [a, b, c] and they are completely interchangeable. It doesn't matter whether you use the first array or the second, because they represent the exact same thing. That's why arrays are structs.
 
@@ -561,7 +631,7 @@ Static methods and type properties work similarly to global functions and global
 
 Declare variables and function return types as optional with `?` where a nil value is acceptable.
 
-Use implicitly unwrapped types declared with `!` only for instance variables that you know will be initialized later before use, such as subviews that will be set up in `viewDidLoad`.
+Use implicitly unwrapped types declared with `!` only for IBOutlets.
 
 When accessing an optional value, use optional chaining if the value is only accessed once or if there are many optionals in the chain:
 
@@ -650,14 +720,14 @@ For empty arrays and dictionaries, use type annotation. (For an array or diction
 
 **Preferred:**
 ```swift
-var names: [String] = []
-var lookup: [String: Int] = [:]
+var names = [String]()
+var lookup = [String: Int]()
 ```
 
 **Not Preferred:**
 ```swift
-var names = [String]()
-var lookup = [String: Int]()
+var names: [String] = []
+var lookup: [String: Int] = [:]
 ```
 
 **NOTE**: Following this guideline means picking descriptive names is even more important than before.
@@ -716,9 +786,7 @@ Extend object lifetime using the `[weak self]` and `guard let strongSelf = self 
 **Preferred**
 ```swift
 resource.request().onComplete { [weak self] response in
-  guard let strongSelf = self else {
-    return
-  }
+  guard let strongSelf = self else { return }
   let model = strongSelf.updateModel(response)
   strongSelf.updateUI(model)
 }
@@ -816,12 +884,8 @@ When coding with conditionals, the left-hand margin of the code should be the "g
 ```swift
 func computeFFT(context: Context?, inputData: InputData?) throws -> Frequencies {
 
-  guard let context = context else {
-    throw FFTError.noContext
-  }
-  guard let inputData = inputData else {
-    throw FFTError.noInputData
-  }
+  guard let context = context else { throw FFTError.noContext }
+  guard let inputData = inputData else { throw FFTError.noInputData }
 
   // use context and input to compute the frequencies
   return frequencies
@@ -850,9 +914,7 @@ When multiple optionals are unwrapped either with `guard` or `if let`, minimize 
 
 **Preferred:**
 ```swift
-guard let number1 = number1,
-      let number2 = number2,
-      let number3 = number3 else {
+guard let number1 = number1, let number2 = number2, let number3 = number3 else {
   fatalError("impossible")
 }
 // do something with numbers
